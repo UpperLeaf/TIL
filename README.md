@@ -1,4 +1,5 @@
 # Today I Learned(TIL)
+### 기억은 RAM이요, 기록은 DISK다.
 
 
 * JPA 
