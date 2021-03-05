@@ -9,6 +9,8 @@
 -   [엔티티 매핑](#엔티티-매핑)
 -   [연관관계 매핑 기초](#연관관계-매핑-기초)
 -   [다양한 연관관계 매핑](#다양한-연관관계-매핑)
+-   [고급 매핑](#고급-매핑)
+-   [프록시와 연관관계 정리](#프록시와-연관관계-정리)
 
 # JPA
 
@@ -297,3 +299,113 @@ RDB는 다대다 관계를 표현할 수 없다. 일반적으로 중간 테이�
 분명히 JPA가 제공하는 다대다 관계는 편리해보이지만, Entity사이에 존재하는 중간 테이블에는 여러가지 데이터가 추가될 수 있다. 이러한 이유로 인해 다대다 관계는 사용되지 않는다.
 
 ![JPA%20b10287beceee42bcb0a2503671f0b00e/Untitled%208.png](../assets/jpa-orm_programming_basic_manytomany.png)
+
+# 고급 매핑
+
+## 상속관계 매핑
+
+RDB는 객체지향처럼 상속관계는 존재하지 않지만, 슈퍼타입과 서브타입이 존재해서 서브타입이 슈퍼타입의 PK값을 FK로 가지는 모델링 기법이 객체 상속과 유사하다.
+
+JPA는 RDB와 객체지향 패러다임의 차이를 극복하기 위해 상속관계 매핑 기능을 여러가지 전략(@Inheritance)으로 제공한다.
+
+-   **@Inheritance(strategy = InheritanceType.JOINED)**
+
+    조인전략으로써, 상위 타입과 하위 타입이 각각 테이블로 분리되어 상위타입의 PK를 하위 타입이 FK로 가지는 형태이다. 정규화된 테이블을 작성할 수 있고, 외래키 제약조건 설정, 저장공간을 효율적으로 저장할 수 있다.
+
+    단 조회시 항상 Join연산을 필요로 하므로, 성능에 문제가 생길수 있고, INSERT 쿼리시에 상위 테이블, 하위 테이블에 각각의 INSERT 쿼리가 발생한다.
+
+-   **@Inheritance(strategy = InheritanceType.SINGLE_TABLE)**
+
+    상위 Entity와 이를 상속받는 하위 Entity들의 모든 Mapping 필드들을 한개의 테이블에서 관리하는 형태이다. 그렇기 때문에 조인연산이 필요하지 않다는것이 장점이다.
+    하지만 필요없는 필드가 많아서 저장공간의 효율성이 떨어지고, 하위 Entity의 모든 Column들은 Nullable이여야한다.
+
+    또한 이 레코드가 어느 Entity에 속하는지 알기위해 DTYPE을 항상 사용해야한다.
+
+-   **@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)**
+
+    하위 Entity마다 상위 Entity의 모든 Column을 복사하여, 독립적인 한개의 TABLE을 구성하는 방식이다. 그렇기 때문에 해당 전략에서는 DTYPE이 아예 사용되지 않는다. NOT NULL제약조건도 이용할 수 있으며, 타입을 확실하게 구분할 수 있지만, 상위 Entity를 이용하여 조회하고 싶다면 성능이 매우 느린 UNION SQL을 이용해야한다. 이 방식은 잘 추천되지 않는다.
+
+상속관계간 상위타입의 테이블에서는 이 레코드가 누구의 레코드인지 판단하기 위해서 DTYPE이라는것을 이용한다. DTYPE은 현재 레코드가 무슨 타입인지 알려주는 역할을 한다.
+JPA에서는 DTYPE을 명시적으로 선언할 수 있는 방법을 제공한다. **@DiscriminatorColumn, @DiscriminatorValue 와** 같은 어노테이션을 이용한다면 명시적으로 DTYPE을 선언할 수 있다.
+
+## 공통 정보 매핑
+
+### @MappedSuperclass
+
+만약 상속관계가 아니라, 공통으로 매핑을 하고싶은 정보가 있다면 JPA에서는 해당 기능을 제공하기 위해 **@MappedSuperclass** 라는 어노테이션을 지원한다. 이 어노테이션을 이용하면 부모 클래스를 상속받는 자식 클래스에 매핑 정보만 제공한다. 그렇기 때문에 상위 클래스를 이용해 Persistence Context에서 조회 및 검색이 불가능하다. 코드를 아래와 같이 작성해서 사용할 수 있다.
+
+```java
+@MappedSuperclass
+public abstract class BaseEntity {
+	private String createdBy;
+	private LocalDateTime createdAt;
+	private String lastModifiedBy;
+	private LocalDateTime lastModifiedAt;
+}
+```
+
+이후 이 매핑 정보를 원하는 Entity는 BaseEntity를 상속받아서 이용하면 된다. 보통 이러한 클래스는 직접 생성해서 사용할 일이 없기 때문에 추상 클래스를 이용한다.
+
+## **@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS) vs @MappedSuperclass**
+
+이 질문은 굉장히 개인적인 의문점으로, 사실 위의 두개의 코드를 통해 생성되는 테이블은 동일하다.
+
+그러면 어떤상황에서 상속관계매핑을 이용하고 어떤 상황에서 공통정보매핑을 이용해야 할까? 그것은 바로 상위 타입이 Entity인가? 에 대한 근본적인 의문으로부터 시작된다.
+상위타입이 Entity라는것은 PK를가지며, 특정 객체로부터 이 객체가 사용될 수 있다는 의미이다. 즉 비지니스 로직에 포함되는 객체이다. 이러한 Entity는 상속관계 매핑을 이용하는것이 옳다.
+
+공통관계매핑에서도 PK의 생성전략이 동일하다면 공통 매핑이 가능하다. 하지만 이 객체는 비지니스 로직에 포함되지 않는다. 단지 매핑할 데이터 컬럼만 가지고 있을뿐이다.
+
+위의 두가지를 잘 파악해서 상속관계 매핑을 이용할것인지 공통정보 매핑을 이용할것인지 결정해야한다. 결정 기준은 상위 타입의 객체가 Entity가 될 수 있는가?에 대한 의문점에 대한 답이다.
+
+# 프록시와 연관관계 정리
+
+### 프록시
+
+IT쪽에서 보통 프록시라는 용어는 **대리자**라는 의미로 많이 사용되는것 같다. JPA에서도 프록시가 이용되는데, 보통 지연로딩을 하기 위해서 많이 이용된다.
+
+JPA 프록시는 Entity클래스를 상속받아서 만들어지기 때문에 겉으로 보기에는 Entity와 똑같이 보이나 내용물은 텅 비어있는 형태이다. 하지만 이후에 프록시 객체를 사용하면, 실제 객체에게 메서드를 위임함으로써 동작하게 된다. 이렇게 프록시 객체를 사용했을때의 장점은 조회 쿼리를 최대한 늦출 수 있다는점이다. 동작과정은 아래와 같다.
+
+![JPA%20b10287beceee42bcb0a2503671f0b00e/Untitled%209.png](../assets/jpa_orm_programming_basic_proxy.png)
+
+프록시는 처음 사용될때 영속성 컨텍스트에게 초기화를 요청한다. 이후 영속성 컨텍스트는 실제 Entity를 DB로부터 데이터를 가져와 생성하고 프록시 객체에게 넘기게된다.
+
+### 즉시로딩과 지연로딩
+
+즉시로딩과 지연로딩은 연관관계 매핑에서 FetchType의 값을 통해 설정할 수 있다.
+
+-   즉시로딩 (FetchType.EAGER)
+
+    처음 Entity를 가져올때 관련된 Entity들을 JOIN 연산을 통해서 가져온다.
+
+    즉시로딩은 JPQL에서 문제가 발생할 수 있다. 실제 개발자가 보낸 쿼리에 즉시로딩 할 연관된 Entity들을 쌓기 위해 또 다른 쿼리가 발생한다. 이때 각 쿼리가 N개 발생할 수 있는데 이를 N+1 문제라고 한다.
+    @ManyToOne, @OneToOne은 Default가 즉시로딩이다. **가능하면, 지연로딩을 사용하자!
+    만약 데이터를 JOIN으로 한번에 가져오고 싶다면 이후에 JPQL 또는 Entity Graph 기능을 이용하자.**
+
+-   지연로딩 (FetchType.LAZY) :
+
+    처음 Entity를 가져올때 관련된 Entity들은 Proxy객체로 대체하고, 이후에 사용될때 조회 쿼리를 날리게 된다.
+    @OneToMany, @ManyToMany는 Default가 지연로딩이다.
+
+### 영속성 전이 : CASCADE
+
+특정 Entity가 영속성 컨텍스트에 의해 영향을 받을때 연관된 다른 Entity도 같이 영향을 받는다.
+
+-   **CasCadeType.PERSIST** : Entity가 영속화될때 연관된 Entity들도 전부 영속화된다. 다만 바로 발생하는것이 아니라, flush() 메서드가 호출할때 발생한다.
+-   **CasCadeType.REMOVE :** Entity가 삭제될때 연관된 Entity들도 전부 삭제된다. 다만 바로 발생하는것이 아니라, flush() 메서드가 호출할때 발생한다.
+-   **CasCadeType.DETACH :** Entity가 준영속화될때 연관된 Entity들도 전부 준영속화된다.
+-   **CasCadeType.ALL :** 위의 모든것을 전부 적용한다.
+
+### 고아 객체
+
+JPA는 부모 엔티티와 연관관계가 끊어진 자식 엔티티를 자동으로 삭제하는 기능을 가진다. 이를 Orphan (고아) 객체 제거라고 한다. 고아 객체 제거 기능을 이용하려면
+orphanRemoval = true 설정해야한다. 이 기능을 사용했을때 부모 Entity에서 자식 Entity를 컬렉션에서 제거하면, DELETE 쿼리가 발생한다.
+
+**고아객체는 반드시 참조하는곳이 하나일때 사용해야한다. 즉 약개체 또는 특정 엔티티가 대상 엔티티를 개인 소유할때 이용해야한다.**
+
+고아 객체 기능을 이용하면 CasCadeType.REMOVE 처럼 동작할 수 있다. 부모 객체가 사라지면 자식 객체의 참조지점이 사라지기 때문이다. 하지만 CasCadeType.REMOVE 와 고아 객체는 확연히 다르다.
+
+### 영속성 전이 + 고아 객체, 생명주기
+
+**CascadeType.ALL + orphanRemoval = true**
+
+이 뜻은 부모 Entity가 자식 Entity의 생명주기를 관리한다는 뜻이다. 보통 Entity의 생명주기는 Persistence Context 즉, 영속성 컨텍스트가 EntityManager의 API를 통해서 관리한다. 하지만 위와 같이 선언하면 부모 Entity에서 컬렉션에 자식 Entity를 추가하고 삭제하는것만으로도 기능이 작동한다. **이는 부모 Entity가 자식 Entity의 생명주기를 관리할 수 있다는 뜻이다.**
