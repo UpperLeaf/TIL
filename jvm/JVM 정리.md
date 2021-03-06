@@ -6,8 +6,8 @@
 
 # 목차
 
-- [자바란 무엇인가?](#자바란-무엇인가?)
-- [JVM이란?](#jvm이란?)
+- [자바란 무엇인가?](#자바란-무엇인가)
+- [JVM이란?](#jvm이란)
 - [Garbage Collection](#garbage-collection)
 - [Garbage Collection Algorithm](#garbage-collection-algorithm)
 - [Garbage Collection of HotSpot JVM](#garbage-collection-of-hotspot-jvm)
@@ -16,7 +16,7 @@
 
 
 
-# 자바란 무엇인가?
+# 자바란 무엇인가
 
 단순한 프로그래밍 언어로써가 아닌, 자바는 **Write Once, Run Anywhere** 라는 철학을 시작으로 발전된 개념이다.
 
@@ -79,7 +79,7 @@ Java Byte Code는 JVM위에서 실행가능한 형태로 변형되며, 이 과�
 
 
 
-# **JVM이란?**
+# **JVM이란**
 
 JVM은 하나의 개념이자 스펙에 지나지 않는다. 실제로 그렇게 되어있고 JVM은 그 누구도 자세한 설계도를 만들어 제공하지 않는다. 단지 JVM은 이렇게 저렇게 해야 한다는 식의 정의만 되어있다.
 
@@ -271,11 +271,11 @@ Java에는 4가지의 변수 유형이 있다.
 Class A {
    int i = 2;                      // Heap에 할당, Value 타입
    Integer j = new Integer(3);     // Heap에 j, object저장, 
-															     // j는 Reference 타입이며 new Integer(3)을 가르킴
+   				   // j는 Reference 타입이며 new Integer(3)을 가르킴
    public void static main(){
        int a = 2;                  //Stack에 할당, Value 타입
        Integer b = new Integer(3); // Stack에 b를 저장 Heap에 Object를 저장
-																	 // b는 Reference타입이며Heap에 있는 Object를 가르킴
+				   // b는 Reference타입이며Heap에 있는 Object를 가르킴
    } 
 }
 ```
