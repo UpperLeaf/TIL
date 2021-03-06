@@ -1,6 +1,18 @@
 # Java Virtual Machine
 
-**이 페이지는 김한도님의 Java Performance Fundamental 책을 읽고 정리한 내용입니다.**
+### **이 페이지는 김한도님의 Java Performance Fundamental 책을 읽고 정리한 내용입니다.**
+
+
+
+# 목차
+
+- [자바란 무엇인가?](#자바란-무엇인가?)
+- [JVM이란?](#jvm이란?)
+- [Garbage Collection](#garbage-collection)
+- [Garbage Collection Algorithm](#garbage-collection-algorithm)
+- [Garbage Collection of HotSpot JVM](#garbage-collection-of-hotspot-jvm)
+- [Garbage Collector의 종류](#garbage-collector의-종류)
+- [Class Loader System](#class-loader-system)
 
 
 
