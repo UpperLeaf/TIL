@@ -271,11 +271,11 @@ Java에는 4가지의 변수 유형이 있다.
 Class A {
    int i = 2;                      // Heap에 할당, Value 타입
    Integer j = new Integer(3);     // Heap에 j, object저장, 
-															     // j는 Reference 타입이며 new Integer(3)을 가르킴
+   				   // j는 Reference 타입이며 new Integer(3)을 가르킴
    public void static main(){
        int a = 2;                  //Stack에 할당, Value 타입
        Integer b = new Integer(3); // Stack에 b를 저장 Heap에 Object를 저장
-																	 // b는 Reference타입이며Heap에 있는 Object를 가르킴
+				   // b는 Reference타입이며Heap에 있는 Object를 가르킴
    } 
 }
 ```
