@@ -6,8 +6,8 @@
 
 # 목차
 
-- [자바란 무엇인가?](#자바란-무엇인가?)
-- [JVM이란?](#jvm이란?)
+- [자바란 무엇인가?](#자바란-무엇인가)
+- [JVM이란?](#jvm이란)
 - [Garbage Collection](#garbage-collection)
 - [Garbage Collection Algorithm](#garbage-collection-algorithm)
 - [Garbage Collection of HotSpot JVM](#garbage-collection-of-hotspot-jvm)
@@ -16,7 +16,7 @@
 
 
 
-# 자바란 무엇인가?
+# 자바란 무엇인가
 
 단순한 프로그래밍 언어로써가 아닌, 자바는 **Write Once, Run Anywhere** 라는 철학을 시작으로 발전된 개념이다.
 
@@ -79,7 +79,7 @@ Java Byte Code는 JVM위에서 실행가능한 형태로 변형되며, 이 과�
 
 
 
-# **JVM이란?**
+# **JVM이란**
 
 JVM은 하나의 개념이자 스펙에 지나지 않는다. 실제로 그렇게 되어있고 JVM은 그 누구도 자세한 설계도를 만들어 제공하지 않는다. 단지 JVM은 이렇게 저렇게 해야 한다는 식의 정의만 되어있다.
 
