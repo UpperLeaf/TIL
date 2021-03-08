@@ -11,6 +11,7 @@
 -   [다양한 연관관계 매핑](#다양한-연관관계-매핑)
 -   [고급 매핑](#고급-매핑)
 -   [프록시와 연관관계 정리](#프록시와-연관관계-정리)
+-   [값 타입](#값-타입)
 
 # JPA
 
@@ -409,3 +410,86 @@ orphanRemoval = true 설정해야한다. 이 기능을 사용했을때 부모 En
 **CascadeType.ALL + orphanRemoval = true**
 
 이 뜻은 부모 Entity가 자식 Entity의 생명주기를 관리한다는 뜻이다. 보통 Entity의 생명주기는 Persistence Context 즉, 영속성 컨텍스트가 EntityManager의 API를 통해서 관리한다. 하지만 위와 같이 선언하면 부모 Entity에서 컬렉션에 자식 Entity를 추가하고 삭제하는것만으로도 기능이 작동한다. **이는 부모 Entity가 자식 Entity의 생명주기를 관리할 수 있다는 뜻이다.**
+
+# 값 타입
+
+자바에서는 크게 값 타입, 레퍼런스 타입 2가지가 존재한다. 값 타입은 일반적으로 변수가 가르키는 곳이 그대로 값을 가지고 있는 형태이며, 레퍼런스 타입은 변수가 가르키는 곳이 실제 값을 가지고 있는 레퍼런스를 가르키는 형태이다.
+
+**JPA에서도 타입이 크게 2종류가 존재한다.**
+
+- **엔티티 타입**
+
+  @Entity로 정의하는 객체, 데이터가 변해도 식별자(PK)로 지속해서 추적
+
+- **값 타입**
+
+  int, Integer, String처럼 단순히 값으로 사용하는 자바 기본 타입 또는 객체. 식별자가 없고 값만 있으므로 변경시 추적 불가. 즉 Id값이 존재하지 않기때문에 데이터 베이스에서 추적하기 힘들다.
+
+  자바 기본 타입 (int, double), Wrapper 클래스 (Integer, Long), String, Embedded Type, ElementCollection이 존재한다.
+
+JPA에서 객체는 값 타입이 될 수 있다. 이를 Embedded Type이라고 하며, 주로 기본 키 타입을 모아서 만들기 때문에 복합 값 타입이라 불리기도 한다. 보통 아래와 같이 사용된다.
+
+```java
+@Embeddable
+public class Address {
+	private String city;
+	private String address;
+	private String zipcode;
+	public Adderss(){} //기본생성자 필수
+}
+```
+
+JPA에서 이러한 값타입을 사용할때 발생하는 장점은 많이 있다.
+
+1. 응집성이 좋아진다.  (비슷한 속성값들을 묶음으로써, 책임을 행할 수 있는 하나의 객체로 만들 수 있다.)
+2. 재사용성이 좋아진다. (여러곳에서 중복되서 사용되는 비슷한 모양들의 값은 중복될 수 있으므로 이러한 중복을 줄일 수 있다.)
+3. Embedded Type은 Entity가 생명주기를 관리한다. 그렇기 때문에 편하게 값을 관리할 수 있다.
+
+### AttributesOverrides (속성 재정의)
+
+만약 Entity에서 같은 값 타입을 사용하여, Column 명이 중복된다면, **@AttributeOverrides** 라는 어노테이션을 이용하여 컬럼 명 속성을 재정의 할 수 있다. 
+
+
+
+## 값 타입과 불변 객체
+
+자바와 JPA가 명시하는 값 타입은 약간의 차이가 존재한다. 자바에서 객체는 값타입이 될 수 없지만, JPA에서는 값타입이 될 수 있다는것이다. 그렇기 때문에 JPA에서는 값 타입을 Entity 객체끼리 공유할 수 있다. 
+
+![JPA%20b10287beceee42bcb0a2503671f0b00e/Untitled%2010.png](../assets/jpa_orm_programming_basic_value_type_1.png)
+
+위의 그림에서 보다시피 주소라는 값 타입을 회원 Entity끼리 공유하다가 한 회원이 값타입을 변경하면 side effect(부작용) 이 생기게 된다. 이런문제는 값타입 객체를 불변객체로 만듦으로써 해결할 수 있다. 
+
+사실 불변객체는 생성자를 통해서 값을 초기화하고 내부 속성들을 final로 설정해야, 완벽한 불변객체임을 보장할 수 있지만, JPA의 특성상 기본 생성자로 객체를 생성하고 이후 필드들에 값을 주입하기 때문에 내부 필드를 final로 설정하는것은 불가능하다.
+
+그렇기 때문에 JPA 값타입을 이용하기 위해서는 Setter 메서드만 접근제어자를 Private 수준으로 설정하여, 이후에 값을 변동할 수 없도록하고, 값을 바꾸고 싶다면 Static Factory Method 또는 생성자를 통해 새로운 객체를 만들어 값을 바꾸도록 해야한다.
+
+![JPA%20b10287beceee42bcb0a2503671f0b00e/Untitled%2011.png](../assets/jpa_orm_programming_basic_value_type_2.png)
+
+**값 타입은 동등성 (Equals)비교시 모든 필드가 같다면, 똑같은 인스턴스라고 판단하고, True를 반환해야한다. 그러므로 값 타입으로 사용하고 싶은 객체는 equals(), hashcode() 메서드를 적절하게 Overriding 해야한다.**
+
+## 값 타입 컬렉션
+
+Entity가 하나이상의 값 타입을 저장할때 사용할 수 있다. @ElementCollection, @CollectionTable을 사용하여, 정의할 수 있다.  사실 RDB에서는 Entity에서 Collection을 저장할 수 있는 방식은 존재하지 않는다. 다만 별도의 테이블을 생성하여 그곳에 값들을 저장한다. 
+
+값 타입 컬렉션 또한 모든 값들을 불러오기 위해서는 JOIN연산을 수행해야한다. 또한 기본적으로 LazyLoading을 수행하며, 생명주기를 Entity가 관리한다. 위에서 봤던 영속성 전이 **CascadeType.ALL 과 orphanRemoval = true**를 설정한것과 동일하다.
+
+**값 타입 컬렉션 주의점**
+
+값 타입 컬렉션을 사용하다가 변경 사항이 발생하면, 주인 Entity와 관련된 모든 레코드를 삭제하고, 현재 컬렉션에 있는 데이터를 기반으로 레코드를 다시 저장한다. **(굉장히 비효율적)** 
+또한 값타입 컬렉션을 매핑하는 테이블은 Id가 존재하지 않기 때문에, 모든 컬럼을 묶어서 하나의 PK를 구성해야한다. **(PK가 존재하지 않는 테이블은 있어서는 안된다..)**
+
+**그래서 값 타입 컬렉션은 되도록 사용하지 않는것이 좋다.**
+
+값타입 컬렉션 대신 @OneToMany 일대다 연관관계 매핑을 이용하는것을 고려하자. 일대다 관계 Entity가 하나의 Wrapper클래스처럼 동작하는형식으로 클래스를 만드는것이다. 그리고 영속성 전이 + 고아 객체 제거를 사용하면 값 타입 컬렉션 처럼 사용할 수 있다.
+
+```java
+@Entity
+public class AddressEntity{
+	@Id @GeneratedValue
+	private Long id;
+	@Embedded
+	private Address address;
+}
+```
+
+**Entity와 값 타입을 혼동해서 실제로 Entity여야 할 데이터를 값 타입으로 만들어서는 안된다. 식별자가 필요하고, 지속해서 값을 추적, 변경해야한다면 값 타입이 아닌 Entity로 생성해야한다.**
