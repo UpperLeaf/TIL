@@ -10,3 +10,5 @@
   - [OS 정리](https://github.com/UpperLeaf/TIL/blob/main/os/%EC%9A%B4%EC%98%81%EC%B2%B4%EC%A0%9C%20%EC%A0%95%EB%A6%AC.md)
 - 면접 준비
   - [정렬](https://github.com/UpperLeaf/TIL/blob/main/%EB%A9%B4%EC%A0%91%EC%A4%80%EB%B9%84/%EC%A0%95%EB%A0%AC.md)
+  - [탐색](https://github.com/UpperLeaf/TIL/blob/main/%EB%A9%B4%EC%A0%91%EC%A4%80%EB%B9%84/%ED%83%90%EC%83%89.md)
+  - [자료구조](https://github.com/UpperLeaf/TIL/blob/main/%EB%A9%B4%EC%A0%91%EC%A4%80%EB%B9%84/%EC%9E%90%EB%A3%8C%EA%B5%AC%EC%A1%B0.md)
