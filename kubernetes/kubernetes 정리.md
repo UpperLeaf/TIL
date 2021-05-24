@@ -209,15 +209,15 @@ NodePort타입의 서비스는 클러스터 외부에서도 접근할 수 있다
 apiVersion: v1
 kind: Service
 metadata:
-	name: hostname-svc-nodeport
+  name: hostname-svc-nodeport
 spec:
-	ports:
-		- name: web-port
-			port: 8080
-			targetPort: 80
-	selector:
-		app: webserver
-	type: NodePort
+  ports:
+  - name: web-port
+    port: 8080
+    targetPort: 80
+  selector:
+    app: webserver
+  type: NodePort
 ```
 
  
