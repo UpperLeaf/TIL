@@ -169,27 +169,27 @@ YAML 파일에서 containerPort 항목을 정의했다고 해서 이 포드가 �
 apiVersion: v1
 kind: Service
 metadata:
-	nome: hostname-svc-clusterip
+  nome: hostname-svc-clusterip
 spec:
-	ports:
-		- name: web-port
-			port: 8080
-			targetPort: 80
-	selector:
-		app: webserver #이 서비스에서 어떠한 라벨을 가지는 포드에 접근할 수 있게 만들 것인지 결정한다.
-	type: ClusterIP```yaml
+  ports:
+  - name: web-port
+    port: 8080
+    targetPort: 80
+    selector:
+      app: webserver #이 서비스에서 어떠한 라벨을 가지는 포드에 접근할 수 있게 만들 것인지 결정한다.
+    type: ClusterIP```yaml
 apiVersion: v1
 kind: Service
 metadata:
-	nome: hostname-svc-clusterip
+  nome: hostname-svc-clusterip
 spec:
-	ports:
-		- name: web-port
-			port: 8080
-			targetPort: 80
-	selector:
-		app: webserver #이 서비스에서 어떠한 라벨을 가지는 포드에 접근할 수 있게 만들 것인지 결정한다.
-	type: ClusterIP
+  ports:
+    - name: web-port
+      port: 8080
+      targetPort: 80
+  selector:
+    app: webserver #이 서비스에서 어떠한 라벨을 가지는 포드에 접근할 수 있게 만들 것인지 결정한다.
+  type: ClusterIP
 ```
 
 Service는 쿠버네티스 내부에서만 사용할 수 있는 고유한 IP를 할당받는다. spec.ports.port 항목은 할당된 IP로 접근할 때 사용할 포트를 지정한다. 또한 spec.ports.targetPort는 selector 항목이 지정한 라벨에 의해 접근되는 포드들이 내부적으로 사용하는 포트를 의미한다.
@@ -236,13 +236,13 @@ apiVersion: v1
 kind: Servicemetadata:	
 name: hostname-svc-lb
 spec:
-	ports:		
+  ports:		
   - name: web-port	
-  		port: 80			
-      targetPort: 80
-      	selector:		
-          app: webserver
-    type: LoadBalancer
+  port: 80			
+  targetPort: 80
+  selector:		
+    app: webserver
+  type: LoadBalancer
 ```
 
 LoadBalancer 타입 또한 NodePort나 ClusterIP와 동일하게 서비스의 IP가 할당됐으며, 클러스터 내에서는 서비스의 IP 또는 서비스의 이름으로 접근할 수 있다.
@@ -263,8 +263,8 @@ LoadBalancer 타입의 서비스를 사용하면 외부로부터 들어온 요�
 apiVersion: v1
 kind: Service
 metadata:
-	annotations:
-	externalTrafficPolicy: Cluster
+  annotations:
+  externalTrafficPolicy: Cluster
 ```
 
 externalTrafficPolicy가 Cluster는 NodePort와 LoadBalancer 타입의 서비스가 기본적으로 동작하는 방식이다. 즉 클러스타 내 모든 노드에 랜덤한 포트를 개방하는 방식이다.
@@ -279,10 +279,10 @@ externalTrafficPolicy가 Cluster는 NodePort와 LoadBalancer 타입의 서비스
 apiVersion: v1
 kind: Service
 metadata:
-	name: externalname-svc
+  name: externalname-svc
 spec:
-	type: ExternalName
-	externalName: my.database.com
+  type: ExternalName
+  externalName: my.database.com
 ```
 
 위의 설정은 쿠버네티스 내부의 포드들이 externalname-svc라는 이름으로 요청을 보낼 경우, 쿠버네티스 DNS는 my.database.com으로 접근할 수 있도록 CNAME 레코드를 반환한다.
